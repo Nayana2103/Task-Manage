@@ -93,11 +93,15 @@ const TaskTable = () => {
   };
 
   return (
+     
+      
+   
     <div className="task-table">
       <div className="task-container">
         {/* Header */}
         <div className="task-header-box">
           <div>
+           
             <h2 className="task-title">Tasks</h2>
             <p className="task-desc">
               <FaCalendarAlt className="calendar-icon" /> Manage your tasks.
