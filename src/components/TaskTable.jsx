@@ -13,15 +13,23 @@ const TaskTable = () => {
   const [completedTasks, setCompletedTasks] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // ✅ counts
-  const tabs = [
-    { name: "Open", count: openTasks.length },
-    { name: "Pending", count: pendingTasks.length },
-    { name: "In Progress", count: inProgressTasks.length },
-    { name: "Completed", count: completedTasks.length },
-  ];
+  // NEW: counts kept separate so they’re correct immediately
+  const [tabCounts, setTabCounts] = useState({
+    Open: 0,
+    Pending: 0,
+    "In Progress": 0,
+    Completed: 0,
+  });
 
-  // ✅ dummy data
+  //  NEW: stash tasks created via modal before their tab is opened
+  const [addedTasks, setAddedTasks] = useState({
+    Open: [],
+    Pending: [],
+    "In Progress": [],
+    Completed: [],
+  });
+
+  //  dummy data (your future API results)
   const dummyData = {
     Open: [
       { id: "T001", priority: "High", createdBy: "Alice", type: "Bug", subType: "UI", name: "Fix navbar issue" },
@@ -40,15 +48,33 @@ const TaskTable = () => {
     ],
   };
 
-  // ✅ Load data only when active tab changes (for API integration in future)
+  //  NEW: initialize counts ONCE (simulate /counts API)
   useEffect(() => {
-    if (activeTab === "Open") setOpenTasks(dummyData.Open);
-    if (activeTab === "Pending") setPendingTasks(dummyData.Pending);
-    if (activeTab === "In Progress") setInProgressTasks(dummyData["In Progress"]);
-    if (activeTab === "Completed") setCompletedTasks(dummyData.Completed);
-  }, [activeTab]);
+    setTabCounts({
+      Open: dummyData.Open.length,
+      Pending: dummyData.Pending.length,
+      "In Progress": dummyData["In Progress"].length,
+      Completed: dummyData.Completed.length,
+    });
+  }, []);
 
-  // ✅ pick tasks for active tab
+  //  Load list data ONLY when switching to that tab (simulate /list?status=...)
+  useEffect(() => {
+    if (activeTab === "Open") {
+      setOpenTasks([...dummyData.Open, ...addedTasks.Open]);
+    }
+    if (activeTab === "Pending") {
+      setPendingTasks([...dummyData.Pending, ...addedTasks.Pending]);
+    }
+    if (activeTab === "In Progress") {
+      setInProgressTasks([...dummyData["In Progress"], ...addedTasks["In Progress"]]);
+    }
+    if (activeTab === "Completed") {
+      setCompletedTasks([...dummyData.Completed, ...addedTasks.Completed]);
+    }
+  }, [activeTab, addedTasks]); // addedTasks ensures newly created items appear when you later open the tab
+
+  //  pick tasks for active tab
   const currentTasks =
     activeTab === "Open"
       ? openTasks
@@ -79,13 +105,27 @@ const TaskTable = () => {
 
   // ✅ Handle new task creation
   const handleTaskCreate = (newTask) => {
-    if (newTask.status === "Open") setOpenTasks((prev) => [...prev, newTask]);
-    if (newTask.status === "Pending") setPendingTasks((prev) => [...prev, newTask]);
-    if (newTask.status === "In Progress") setInProgressTasks((prev) => [...prev, newTask]);
-    if (newTask.status === "Completed") setCompletedTasks((prev) => [...prev, newTask]);
+    const status = newTask.status || "Open";
+
+    // 1) bump counts immediately
+    setTabCounts((prev) => ({ ...prev, [status]: (prev[status] || 0) + 1 }));
+
+    // 2) remember this task for that tab
+    setAddedTasks((prev) => ({
+      ...prev,
+      [status]: [...prev[status], newTask],
+    }));
+
+    // 3) if currently on that tab, also append to visible list
+    if (status === activeTab) {
+      if (status === "Open") setOpenTasks((prev) => [...prev, newTask]);
+      if (status === "Pending") setPendingTasks((prev) => [...prev, newTask]);
+      if (status === "In Progress") setInProgressTasks((prev) => [...prev, newTask]);
+      if (status === "Completed") setCompletedTasks((prev) => [...prev, newTask]);
+    }
   };
 
-  // ✅ export CSV
+  //  export CSV
   const exportToCSV = () => {
     if (!filteredTasks.length) return;
 
@@ -111,12 +151,24 @@ const TaskTable = () => {
     document.body.removeChild(link);
   };
 
+  //  counts now come from tabCounts (correct on first render)
+  const tabs = [
+    { name: "Open", count: tabCounts.Open },
+    { name: "Pending", count: tabCounts.Pending },
+    { name: "In Progress", count: tabCounts["In Progress"] },
+    { name: "Completed", count: tabCounts.Completed },
+  ];
+
   return (
+     
+      
+   
     <div className="task-table">
       <div className="task-container">
         {/* Header */}
         <div className="task-header-box">
           <div>
+           
             <h2 className="task-title">Tasks</h2>
             <p className="task-desc">
               <FaCalendarAlt className="calendar-icon" /> Manage your tasks.
@@ -127,7 +179,7 @@ const TaskTable = () => {
           </button>
         </div>
 
-        {/* ✅ Pass callback to TaskModal */}
+        {/* Modal */}
         <TaskModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
@@ -139,19 +191,7 @@ const TaskTable = () => {
           <h3 className="filter-heading">Filter:</h3>
           <div className="filter-row-wrapper">
             <div className="filter-row">
-              {/*<select
-                value={selectedColumn}
-                onChange={(e) => setSelectedColumn(e.target.value)}
-              >
-                <option value="">Select Column</option>
-                <option value="all">All Columns</option>
-                <option value="id">Task Id</option>
-                <option value="priority">Priority</option>
-                <option value="createdBy">Created By</option>
-                <option value="type">Type</option>
-                <option value="subType">Sub Type</option>
-                <option value="name">Task Name</option>
-              </select>*/}
+              {/* column selector removed per your snippet */}
               <input
                 type="text"
                 placeholder="Type to search"

@@ -3,7 +3,7 @@ import { Modal, message } from "antd";
 import { useForm } from "react-hook-form";
 import "../styles/TaskModal.css";
 
-const TaskModal = ({ isOpen, onClose, onAddTask}) => {
+const TaskModal = ({ isOpen, onClose, onAddTask }) => {
   const [priority, setPriority] = useState("Medium");
   const [messageApi, contextHolder] = message.useMessage();
 
@@ -57,22 +57,21 @@ const TaskModal = ({ isOpen, onClose, onAddTask}) => {
     onClose();
   };**/
   const onSubmit = (data) => {
-  if (onAddTask) {
-    onAddTask({
-      id: "T" + Date.now(),        // similar format as dummyData
-      priority,
-      createdBy: "Mohamed Rifthy", // hardcoded for now
-      type: data.taskType,
-      subType: data.engagement || "-", 
-      name: data.taskName,
-      status: data.status || "Open",
-    });
-  }
-  messageApi.success("Task created successfully");
-  reset();
-  onClose();
-};
-
+    if (onAddTask) {
+      onAddTask({
+        id: "T" + Date.now(), // similar format as dummyData
+        priority,
+        createdBy: "Mohamed Rifthy", // hardcoded for now
+        type: data.taskType,
+        subType: data.engagement || "-",
+        name: data.taskName,
+        status: data.status || "Open",
+      });
+    }
+    messageApi.success("Task created successfully");
+    reset();
+    onClose();
+  };
 
   return (
     <>
@@ -104,7 +103,9 @@ const TaskModal = ({ isOpen, onClose, onAddTask}) => {
                     placeholder="Enter Name"
                     {...register("name", { required: "Name is required" })}
                   />
-                  {errors.name && <p className="error">{errors.name.message}</p>}
+                  {errors.name && (
+                    <p className="error">{errors.name.message}</p>
+                  )}
                 </div>
               </div>
 
@@ -191,7 +192,9 @@ const TaskModal = ({ isOpen, onClose, onAddTask}) => {
                   <input
                     type="text"
                     placeholder="Enter Task Name"
-                    {...register("taskName", { required: "Task name is required" })}
+                    {...register("taskName", {
+                      required: "Task name is required",
+                    })}
                   />
                   {errors.taskName && (
                     <p className="error">{errors.taskName.message}</p>
@@ -233,16 +236,18 @@ const TaskModal = ({ isOpen, onClose, onAddTask}) => {
                   <select
                     value={priority}
                     onChange={(e) => setPriority(e.target.value)}
-                    {...register("priority", { required: "Priority is required" })}
                     className={`${getPriorityClass()} font-semibold`}
                   >
-                    <option value="Low" className="text-green-600">Low</option>
-                    <option value="Medium" className="text-orange-500">Medium</option>
-                    <option value="High" className="text-red-600">High</option>
+                    <option value="Low" className="text-green-600">
+                      Low
+                    </option>
+                    <option value="Medium" className="text-orange-500">
+                      Medium
+                    </option>
+                    <option value="High" className="text-red-600">
+                      High
+                    </option>
                   </select>
-                  {errors.priority && (
-                    <p className="error">{errors.priority.message}</p>
-                  )}
                 </div>
 
                 <div className="form-group half">
@@ -282,7 +287,9 @@ const TaskModal = ({ isOpen, onClose, onAddTask}) => {
               </div>
 
               <div className="form-actions">
-                <button type="submit" className="btn-primary">Save</button>
+                <button type="submit" className="btn-primary">
+                  Save
+                </button>
                 <button
                   type="button"
                   className="btn-secondary"
