@@ -58,6 +58,25 @@ const TaskTable = () => {
       ? inProgressTasks
       : completedTasks;
 
+  // ✅ filter tasks based on search
+  const filteredTasks = currentTasks.filter((task) => {
+    if (!search.trim()) return true;
+    const lowerSearch = search.toLowerCase();
+
+    if (!selectedColumn || selectedColumn === "all") {
+      return (
+        task.id.toLowerCase().includes(lowerSearch) ||
+        task.priority.toLowerCase().includes(lowerSearch) ||
+        task.createdBy.toLowerCase().includes(lowerSearch) ||
+        task.type.toLowerCase().includes(lowerSearch) ||
+        task.subType.toLowerCase().includes(lowerSearch) ||
+        task.name.toLowerCase().includes(lowerSearch)
+      );
+    } else {
+      return task[selectedColumn]?.toLowerCase().includes(lowerSearch);
+    }
+  });
+
   // ✅ Handle new task creation
   const handleTaskCreate = (newTask) => {
     if (newTask.status === "Open") setOpenTasks((prev) => [...prev, newTask]);
@@ -68,10 +87,10 @@ const TaskTable = () => {
 
   // ✅ export CSV
   const exportToCSV = () => {
-    if (!currentTasks.length) return;
+    if (!filteredTasks.length) return;
 
     const headers = ["Task Id", "Priority", "Created By", "Type", "Sub Type", "Task Name"];
-    const rows = currentTasks.map((task) => [
+    const rows = filteredTasks.map((task) => [
       task.id,
       task.priority,
       task.createdBy,
@@ -120,7 +139,7 @@ const TaskTable = () => {
           <h3 className="filter-heading">Filter:</h3>
           <div className="filter-row-wrapper">
             <div className="filter-row">
-             {/*<select
+              {/*<select
                 value={selectedColumn}
                 onChange={(e) => setSelectedColumn(e.target.value)}
               >
@@ -177,8 +196,8 @@ const TaskTable = () => {
                 </tr>
               </thead>
               <tbody>
-                {currentTasks.length > 0 ? (
-                  currentTasks.map((task, idx) => (
+                {filteredTasks.length > 0 ? (
+                  filteredTasks.map((task, idx) => (
                     <tr key={idx}>
                       <td><button>⋮</button></td>
                       <td>{task.id}</td>
@@ -201,7 +220,7 @@ const TaskTable = () => {
           </div>
 
           <div className="table-footer">
-            <span>Total Records: {currentTasks.length}</span>
+            <span>Total Records: {filteredTasks.length}</span>
           </div>
         </div>
       </div>
